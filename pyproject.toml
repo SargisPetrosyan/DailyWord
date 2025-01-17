@@ -1,0 +1,14 @@
+[project]
+name = "dailyword"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "django>=5.1.5",
+    "djangorestframework>=3.15.2",
+    "httpx>=0.28.1",
+    "ngrok>=1.4.0",
+    "python-dotenv>=1.0.1",
+    "python-telegram-bot[all]>=21.10",
+]
