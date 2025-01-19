@@ -1,5 +1,5 @@
-from django.urls import path
 from . import views
+from django.urls import path
 
 urlpatterns = [
   path('getpost/', views.telegram_bot, name='telegram_bot'),

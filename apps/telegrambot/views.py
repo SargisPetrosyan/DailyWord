@@ -7,8 +7,8 @@ import os
 
 load_dotenv()
 
-TELEGRAM_API_URL = os.getenv("TELEGRAM_API_URL")
-TELEGRAM_PUBLIC_URL = os.getenv("TELEGRAM_PUBLIC_URL")
+TELEGRAM_API_URL = os.get("TELEGRAM_API_URL")
+TELEGRAM_PUBLIC_URL = os.get("TELEGRAM_PUBLIC_URL")
 
 @csrf_exempt
 def telegram_bot(request):
@@ -22,7 +22,7 @@ def telegram_bot(request):
   return HttpResponse('ok')
 
 def send_message(method, data):
-  return requests.post(TELEGRAM_API_URL+ method, data)
+  return requests.post(TELEGRAM_API_URL + method, data)
 
 def setwebhook(request):
   response = requests.post(TELEGRAM_API_URL+ "setWebhook?url=" + TELEGRAM_PUBLIC_URL).json()
