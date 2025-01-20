@@ -3,5 +3,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('telegrambot/', include('apps.telegrambot.urls'), name="telegrambot"),
+    path('', include('apps.telegrambot.urls'), name="telegrambot"),
 ]
