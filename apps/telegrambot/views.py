@@ -1,39 +1,37 @@
 import json
 import requests
-from django.http import HttpResponse, HttpResponseBadRequest
-from django.views.decorators.csrf import csrf_exempt
-from dotenv import load_dotenv
-import os
+from django.http import HttpResponse,JsonResponse
+from django.views import View
+
+from .handlers import starthandler,getwordhandler
 
 
-load_dotenv(override=True)
+class TelegramBotHandler(View):
+  async def post(self, request,*args, **kwargs):
+    try:
+      data = json.loads(request.body)
+    except json.JSONDecodeError:
+      return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
-TELEGRAM_API_URL = os.getenv("TELEGRAM_API_URL")
-TELEGRAM_PUBLIC_URL = os.getenv("TELEGRAM_PUBLIC_URL")
-print(TELEGRAM_PUBLIC_URL)
+    event_type = requests.get('event')
 
+    event_handlers = {
+      'start':starthandler(),
+      'get_word':getwordhandler(),
+  }
+    handler = event_handlers.get(event_type)
 
-@csrf_exempt
-def telegram_bot(request):
-  if request.method == 'POST':
-    update = json.loads(request.body.decode('utf-8'))
-    handle_update(update)
-    return HttpResponse('ok')
-  else:
-    return HttpResponseBadRequest('Bad Request')
+    if handler:
+      await handler.handle(data)
+      return JsonResponse({'status:''success'}, status=200)
+    
+    else:
+      return JsonResponse({'error':"Unknown event type"}, status=400)
+    
 
-def handle_update(update):
-  chat_id = update['message']['chat']['id']
-  text = update['message']['text']
-  send_message("sendMessage", {
-    'chat_id': chat_id,
-    'text': f'you said {text}'
-  })
+TELEGRAM_API_URL = "https://api.telegram.org/bot7210222575:AAFMzyzx6-6tCn3nlqlxo90iinZc5UUOLiQ/"
+TELEGRAM_PUBLIC_URL='https://4cf6-83-250-15-222.ngrok-free.app/'
 
-
-def send_message(method, data):
-  return requests.post(TELEGRAM_API_URL + method, data)
 
 def setwebhook(request):
   response = requests.post(f"{TELEGRAM_API_URL}setWebhook?url={TELEGRAM_PUBLIC_URL}getpost/").json()
