@@ -1,42 +1,37 @@
-import json
-import requests
-from django.http import HttpResponse,JsonResponse
+from django.http import JsonResponse,HttpResponse
+
 from django.views import View
+import requests
+import json
+from dotenv import load_dotenv
+import os
+from .handlers import TelegramHandler  # Import your handler logic
 
-from .handlers import starthandler,getwordhandler
 
+class TelegramBotView(View):
+    async def post(self, request, *args, **kwargs):
+        try:
+            # Parse incoming JSON request
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON'}, status=400)
 
-class TelegramBotHandler(View):
-  async def post(self, request,*args, **kwargs):
-    try:
-      data = json.loads(request.body)
-    except json.JSONDecodeError:
-      return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        # Delegate handling to the TelegramHandler
+        handler = TelegramHandler()
+        response = await handler.process_update(data)
+        return JsonResponse(response)
+  
 
-    event_type = requests.get('event')
+load_dotenv()
 
-    event_handlers = {
-      'start':starthandler(),
-      'get_word':getwordhandler(),
-  }
-    handler = event_handlers.get(event_type)
-
-    if handler:
-      await handler.handle(data)
-      return JsonResponse({'status:''success'}, status=200)
-    
-    else:
-      return JsonResponse({'error':"Unknown event type"}, status=400)
-    
-
-TELEGRAM_API_URL = "https://api.telegram.org/bot7210222575:AAFMzyzx6-6tCn3nlqlxo90iinZc5UUOLiQ/"
-TELEGRAM_PUBLIC_URL='https://4cf6-83-250-15-222.ngrok-free.app/'
-
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_PUBLIC_URL='https://e207-2a02-aa1-1056-bcde-425-b6ec-6e8-b8a6.ngrok-free.app/'
+TELEGRAM_BOT_API = os.getenv("TELEGRAM_BOT_API")
 
 def setwebhook(request):
-  response = requests.post(f"{TELEGRAM_API_URL}setWebhook?url={TELEGRAM_PUBLIC_URL}getpost/").json()
+  response = requests.post(f"{TELEGRAM_BOT_API}setWebhook?url={TELEGRAM_PUBLIC_URL}telegram/webhook/").json()
   return HttpResponse(f"{response}")
 
 def delete_webhook(request):
-  response = requests.post(f"{TELEGRAM_API_URL}setWebhook?url=").json()
+  response = requests.post(f"{TELEGRAM_BOT_API}setWebhook?url=").json()
   return HttpResponse(f"{response}")
