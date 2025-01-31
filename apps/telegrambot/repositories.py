@@ -1,41 +1,53 @@
 from apps.telegrambot.models import User
+from django.core.exceptions import ObjectDoesNotExist
 import asyncio
 
 
 class UserRepasitory:
     @staticmethod
-    async def create_user(user_chat_id, 
-                    username, 
-                    language_code, 
-                    native_language=None, 
-                    language_to_learn=None,):
-        
+    async def create_user(user_chat_id: int, 
+                    username: str, 
+                    language_code: str, 
+                    native_language: str =None, 
+                    language_to_learn: str =None,
+                    language_knowlege_level: str =None,) -> User:
         user = User(
             user_chat_id=user_chat_id,
             username=username,
             language_code=language_code,
             native_language=native_language,
             language_to_learn=language_to_learn,
+            language_knowlege_level=language_knowlege_level,
         )
         await user.asave()
         return user
-
-    @staticmethod
-    async def get_user_by_chat_id(user_chat_id):
-        try:
-            return await asyncio.wait_for(User.objects.aget(pk=user_chat_id), timeout=5)
-        except asyncio.TimeoutError:
-            print("Query timed out")
     
     @staticmethod
-    async def get_user_native_language(user_chat_id,native_language):
-        try:
-             user = await asyncio.wait_for(User.objects.filter(pk=native_language).aget(user_chat_id=user_chat_id), timeout=5)
-             return user.native_language if user else None
-        except asyncio.Timeout:
-            print("Query timed out")
+    async def user_exists(user_chat_id: int) -> bool:
+        return await User.objects.filter(user_chat_id=user_chat_id).aexists()
 
+    @staticmethod
+    async def get_user_by_chat_id(user_chat_id: int) -> int:
+        return await User.objects.aget(user_chat_id=user_chat_id)
         
+    @staticmethod
+    async def set_user_native_language(user_chat_id,native_language) -> None:
+        user =  await User.objects.aget(user_chat_id=user_chat_id)
+        user.native_language = native_language
+        await user.asave()
+           
+    @staticmethod
+    async def set_user_language_to_learn(user_chat_id,language_to_learn) -> None:
+        user =  await User.objects.aget(user_chat_id=user_chat_id)
+        user.language_to_learn = language_to_learn
+        await user.asave()
+    
+    @staticmethod
+    async def set_user_language_knowlege_level(user_chat_id,language_knowlege_level) -> None:
+        user =  await User.objects.aget(user_chat_id=user_chat_id)
+        user.language_knowlege_level = language_knowlege_level
+        await user.asave()
+           
     # @staticmethod
     # async def get_user_language_to_learn(language_to_learn):
     #      return User.objects.filter(native_language=language_to_learn)

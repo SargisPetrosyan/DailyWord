@@ -1,14 +1,11 @@
-from telegram import (
-    Update,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-)
-
-from apps.telegrambot.services import create_user
-
-from telegram.ext import (
-    ContextTypes,
-    ConversationHandler,
+from telegram import (Update,InlineKeyboardButton,InlineKeyboardMarkup,)
+from telegram.ext import (ContextTypes,ConversationHandler,)
+from apps.telegrambot.services import (
+    create_user,
+    user_exist,
+    set_native_language,
+    set_language_to_learn,
+    set_user_language_knowlege_level,
 )
 
 languages = [
@@ -19,10 +16,20 @@ languages = [
 markup_languages = InlineKeyboardMarkup(
     [
         [
-            InlineKeyboardButton(language, callback_data=language.lower())
-            for language in row
+            InlineKeyboardButton('English', callback_data='en'),
+            InlineKeyboardButton('Spanish', callback_data='es'),
+            InlineKeyboardButton('French', callback_data='fr') 
+        ],
+        [
+            InlineKeyboardButton('Russian', callback_data='ru'),
+            InlineKeyboardButton('Chinese', callback_data='zh'),
+            InlineKeyboardButton('Hindi', callback_data='hi') 
+        ],
+        [
+            InlineKeyboardButton('Portuguese ', callback_data='pt'),
+            InlineKeyboardButton('Japanese ', callback_data='ja'),
+            InlineKeyboardButton('German ', callback_data='de') 
         ]
-        for row in languages
     ]
 )
 
@@ -30,23 +37,27 @@ CONTINUE, LANGUAGE_TO_LEARN, ENGLISH_KNOWLEGE_LEVEL = range(3)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start the conversation and ask user for input."""
-    await create_user(
-        user_chat_id=update.message.chat.id,
-        username='Barev',
-        language_code=update.message.from_user.language_code,
-        )
+    user = await user_exist(user_chat_id=update.message.chat.id) #5464909067
+    if not user:
+        await create_user(
+            user_chat_id=update.message.chat.id,
+            username=update.message.from_user.first_name,
+            language_code=update.message.from_user.language_code,
+            )
+    
+    else:
+        pass
     
     keyboard = [[InlineKeyboardButton("Continue", callback_data="continue")]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text(
-        """🎉 Welcome to Daily Word Bot! 🎉
+        f"""🎉 Welcome {str(update.message.from_user.first_name)} to Daily Word Bot ! 🎉
 
 Your ultimate companion for building your vocabulary, one word at a time (or more)!
 
-                        Here's what you can do:
 📚 Pick words from various categories that interest you.
-📖 Organize and save words in your personalized, categorized dictionaries.
+📖 Save and organize words in your personalized dictionaries.
 📅 Get one or multiple words delivered to you every day!
 📝 Challenge yourself with quizzes to reinforce your learning.
 
@@ -69,7 +80,7 @@ async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
         🌐 From: (Your native language)""",
         reply_markup=markup_languages,
     )
-
+    await set_native_language(user_chat_id=update.callback_query.message.chat.id, native_language=update.callback_query.data)
     return LANGUAGE_TO_LEARN
 
 
@@ -80,6 +91,7 @@ async def language_to_learn(update: Update, context: ContextTypes.DEFAULT_TYPE):
         🌐 To: (language thet want to learn)""",
         reply_markup=markup_languages,
     )
+    await set_language_to_learn(user_chat_id=update.callback_query.message.chat.id, language_to_learn=update.callback_query.data)
 
     return ENGLISH_KNOWLEGE_LEVEL
 
@@ -106,6 +118,7 @@ Once you pick your level, we’ll get started! 🚀
     """,
         reply_markup=language_level_markup,
     )
+    await set_user_language_knowlege_level(user_chat_id=update.callback_query.message.chat.id,language_knowlege_level=update.callback_query.data)
     return ConversationHandler.END
 
 
