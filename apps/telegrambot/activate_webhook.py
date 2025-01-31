@@ -2,12 +2,10 @@ import asyncio
 import json
 import logging
 from dataclasses import dataclass
-from uuid import uuid4
 import os
+from django.views.decorators.csrf import csrf_exempt
 
- # Adjust this path if needed
-
-
+ # Adjus
 import uvicorn
 from django.conf import settings
 from django.core.asgi import get_asgi_application
@@ -15,6 +13,7 @@ from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.urls import path
 import os
 from dotenv import load_dotenv
+from myproject import urls
 
 from telegram import Update
 from telegram.constants import ParseMode
@@ -46,7 +45,7 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-PUBLIC_URL = "https://40e9-83-250-15-222.ngrok-free.app"
+PUBLIC_URL = "https://325b-83-250-15-222.ngrok-free.app"
 
 
 # Enable logging
@@ -106,7 +105,7 @@ async def webhook_update(update: WebhookUpdate, context: CustomContext) -> None:
         chat_id=ADMIN_CHAT_ID, text=text, parse_mode=ParseMode.HTML
     )
 
-
+@csrf_exempt
 async def telegram(request: HttpRequest) -> HttpResponse:
     """Handle incoming Telegram updates by putting them into the `update_queue`"""
     await ptb_application.update_queue.put(
@@ -114,7 +113,7 @@ async def telegram(request: HttpRequest) -> HttpResponse:
     )
     return HttpResponse()
 
-
+@csrf_exempt
 async def custom_updates(request: HttpRequest) -> HttpResponse:
     """
     Handle incoming webhook updates by also putting them into the `update_queue` if
@@ -162,14 +161,10 @@ ptb_application.add_handler(conv_handler)
 ptb_application.add_handler(CommandHandler("start", start))
 
 
-urlpatterns = [
+urls.urlpatterns.extend([
     path("telegram", telegram, name="Telegram updates"),
     path("submitpayload", custom_updates, name="custom updates"),
-]
-
-
-settings.configure(ROOT_URLCONF=__name__, SECRET_KEY=uuid4().hex)
-
+])
 
 async def main() -> None:
     """Finalize configuration and run the applications."""

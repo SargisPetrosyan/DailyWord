@@ -17,7 +17,7 @@ class UserRepasitory:
             native_language=native_language,
             language_to_learn=language_to_learn,
         )
-        await user.save()
+        await user.asave()
         return user
 
     @staticmethod
