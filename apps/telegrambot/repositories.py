@@ -1,24 +1,14 @@
-from telegrambot.models import User
-from functools import wraps
+from apps.telegrambot.models import User
+import asyncio
 
-#Decoartor
-def user_exists_decorator(func):
-    @wraps(func)
-    async def wrapper(user_chat_id,*args,**kwargs):
-        user = await UserRepasitory.get_user_by_id(user_chat_id)
-        if not user:
-            raise ValueError(f"User with chat ID {user_chat_id} not found")
-        return await func(user_chat_id, *args,**kwargs)
-    return wrapper
 
 class UserRepasitory:
-
     @staticmethod
     async def create_user(user_chat_id, 
                     username, 
                     language_code, 
-                    native_language, 
-                    language_to_learn):
+                    native_language=None, 
+                    language_to_learn=None,):
         
         user = User(
             user_chat_id=user_chat_id,
@@ -31,13 +21,20 @@ class UserRepasitory:
         return user
 
     @staticmethod
-    @user_exists_decorator
-    async def get_user_by_id(user_chat_id):
-         return await User.objects.filter(user_chat_id=user_chat_id )
+    async def get_user_by_chat_id(user_chat_id):
+        try:
+            return await asyncio.wait_for(User.objects.aget(pk=user_chat_id), timeout=5)
+        except asyncio.TimeoutError:
+            print("Query timed out")
     
-    # @staticmethod
-    # @user_exists_decorator
-    # async def get_user_native_language(user_chat_id,nativ_language):
+    @staticmethod
+    async def get_user_native_language(user_chat_id,native_language):
+        try:
+             user = await asyncio.wait_for(User.objects.filter(pk=native_language).aget(user_chat_id=user_chat_id), timeout=5)
+             return user.native_language if user else None
+        except asyncio.Timeout:
+            print("Query timed out")
+
         
     # @staticmethod
     # async def get_user_language_to_learn(language_to_learn):

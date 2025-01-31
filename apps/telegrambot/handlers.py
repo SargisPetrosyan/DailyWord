@@ -1,16 +1,19 @@
-from dotenv import load_dotenv
-import time
+from .services import create_user
 
 from telegram import (
     Update,
     InlineKeyboardButton,
     InlineKeyboardMarkup,
 )
+import os
 
 from telegram.ext import (
     ContextTypes,
     ConversationHandler,
 )
+
+
+from apps.telegrambot.services import create_user
 
 languages = [
     ["English", "Spanish", "French"],
@@ -27,15 +30,15 @@ markup_languages = InlineKeyboardMarkup(
     ]
 )
 
-
 CONTINUE, LANGUAGE_TO_LEARN, ENGLISH_KNOWLEGE_LEVEL = range(3)
-
-
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start the conversation and ask user for input."""
-    # Log the error for further inspection
-    print(update)
+    await create_user(user_chat_id=update.message.chat_id,
+                    username=update.message.from_user.username,
+                    language_code=update.message.from_user.language_code
+    )
+    
     keyboard = [[InlineKeyboardButton("Continue", callback_data="continue")]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)

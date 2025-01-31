@@ -3,6 +3,10 @@ import json
 import logging
 from dataclasses import dataclass
 from uuid import uuid4
+import os
+
+ # Adjust this path if needed
+
 
 import uvicorn
 from django.conf import settings
@@ -27,7 +31,7 @@ from telegram.ext import (
     CallbackQueryHandler,
 )
 
-from handlers import (
+from apps.telegrambot.handlers import (
     start,
     native_language,
     language_to_learn,
@@ -42,7 +46,7 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-PUBLIC_URL = "https://df62-83-250-15-222.ngrok-free.app"
+PUBLIC_URL = "https://40e9-83-250-15-222.ngrok-free.app"
 
 
 # Enable logging
