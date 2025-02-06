@@ -44,6 +44,9 @@ from apps.telegrambot.handlers import (
     SEARCH,
     ARCHIVE,
     QUIZ,
+    CONTINUE,
+    ENGLISH_KNOWLEGE_LEVEL,
+    language_knowlege_level,
     archive,
     search_word,
     native_language,
@@ -166,10 +169,19 @@ ptb_application = (
 
 # register handlers
 ptb_application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
-
-
-conv_handler = ConversationHandler(
+start_conv = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
+        states={
+            CONTINUE: [CallbackQueryHandler(native_language)],
+            LANGUAGE_TO_LEARN: [CallbackQueryHandler(language_to_learn)],
+            ENGLISH_KNOWLEGE_LEVEL: [CallbackQueryHandler(language_knowlege_level)],
+        },
+        fallbacks=[CommandHandler("start", start)],
+    )
+
+      
+conv_handler = ConversationHandler(
+        entry_points=[CommandHandler("menu", menu)],
         states={
             MENU_ROUTES: [
                 CallbackQueryHandler(daily_word, pattern="^" + str(DAILY_WORD) + "$"),
@@ -183,17 +195,17 @@ conv_handler = ConversationHandler(
                 CallbackQueryHandler(search_word, pattern="^" + str(SEARCH) + "$"),
                 CallbackQueryHandler(archive, pattern="^" + str(ARCHIVE) + "$"),
                 CallbackQueryHandler(quiz, pattern="^" + str(QUIZ) + "$"),
-                  
             ],
             END_MENU_ROUTES: [
                 CallbackQueryHandler(menu, pattern="^" + str(DAILY_WORD) + "$"),
             ],
         },
-        fallbacks=[CommandHandler("start", start)],
+        fallbacks=[CommandHandler("menu", menu)],
     )
 
     # Add ConversationHandler to application that will be used for handling updates
 ptb_application.add_handler(conv_handler)
+ptb_application.add_handler(start_conv)
 
 urls.urlpatterns.extend([
     path("telegram", telegram, name="Telegram updates"),
@@ -225,41 +237,3 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    #     states={
-#         CONTINUE: [CallbackQueryHandler(native_language)],
-#         LANGUAGE_TO_LEARN: [CallbackQueryHandler(language_to_learn)],
-#         ENGLISH_KNOWLEGE_LEVEL: [CallbackQueryHandler(language_knowlege_level)],
-#     },
-#     fallbacks=[MessageHandler(filters.TEXT, unknown)],
-# )
-# ptb_application.add_handler(conv_handler)
-# ptb_application.add_handler(CommandHandler("start", start))
