@@ -40,8 +40,19 @@ logger = logging.getLogger(__name__)
 # Stages
 MENU_ROUTES, END_MENU_ROUTES = range(2)
 # Callback data
-DAILY_WORD, VOCABULARY = range(2)
-
+(   
+    DAILY_WORD, 
+    VOCABULARY,
+    MENU, 
+    KNOWLEGE_LEVEL, 
+    NATIVE_LANGUAGE,
+    LANGUAGE_TO_LEARN,
+    SETTINGS,
+    HELP,
+    SEARCH,
+    ARCHIVE,
+    QUIZ,  
+) = range(11)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Send message on `/start`."""
@@ -49,8 +60,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     logger.info("User %s started the conversation.", user.first_name)
     keyboard = [
         [
-            InlineKeyboardButton("📆 Word of Day", callback_data=str("daily_word")),
-            InlineKeyboardButton("📖 Vocabulary", callback_data=str("vocabulary")),
+            InlineKeyboardButton("📆 Word of Day", callback_data=str(DAILY_WORD)),
+            InlineKeyboardButton("📖 Vocabulary", callback_data=str(VOCABULARY)),
         ],
         [
             InlineKeyboardButton("🎯 Quiz", callback_data=str("quiz")),
@@ -68,6 +79,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     # Send message with text and appended InlineKeyboard
     await update.message.reply_text(
 text="""Hey!👋 Welcome to the Daily Word Bot! 🌟
+
 You can find words and their descriptions, set up a daily word, 
 select categories, save them, and learn them. 📚✨
 
@@ -78,34 +90,40 @@ reply_markup=reply_markup)
     return MENU_ROUTES
 
 
-async def start_over(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Prompt same text & keyboard as `start` does but not as new message"""
-    # Get CallbackQuery from Update
+
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Send message on `/menu`."""
     query = update.callback_query
-    # CallbackQueries need to be answered, even if no notification to the user is needed
-    await query.answer()
+    # logger.info("User %s started the conversation.", query.first_name)
     keyboard = [
         [
-            InlineKeyboardButton("📆 Daily Word", callback_data=str("daily_word")),
-            InlineKeyboardButton("📖 Vocabulary", callback_data=str("vocabulary")),
+            InlineKeyboardButton("📆 Word of Day", callback_data=str(DAILY_WORD)),
+            InlineKeyboardButton("📖 Vocabulary", callback_data=str(VOCABULARY)),
         ],
         [
-            InlineKeyboardButton("🎯 Quiz", callback_data=str("quiz")),
-            InlineKeyboardButton("🔍 Search Word", callback_data=str("search_word")),
+            InlineKeyboardButton("🎯 Quiz", callback_data=str(QUIZ)),
+            InlineKeyboardButton("🔍 Search Word", callback_data=str(SEARCH)),
         ],
         [
-            InlineKeyboardButton("🗂️ Archive", callback_data=str("archive")),
-            InlineKeyboardButton("❓ Help", callback_data=str("help")),
+            InlineKeyboardButton("🗂️ Archive", callback_data=str(ARCHIVE)),
+            InlineKeyboardButton("❓ Help", callback_data=str(HELP)),
         ],
         [
-            InlineKeyboardButton("⚙️ Settings", callback_data=str("settings")),
+            InlineKeyboardButton("⚙️ Settings", callback_data=str(SETTINGS)),
         ]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    # Instead of sending a new message, edit the message that
-    # originated the CallbackQuery. This gives the feeling of an
-    # interactive menu.
-    await query.edit_message_text(text='hello',reply_markup=reply_markup)
+    # Send message with text and appended InlineKeyboard
+    await query.edit_message_text(
+text="""Hey!👋 Welcome to the Daily Word Bot! 🌟
+
+You can find words and their descriptions, set up a daily word, 
+select categories, save them, and learn them. 📚✨
+
+Use the menu below for all options! ⬇️
+For assistance, select /help """,
+reply_markup=reply_markup)
+    # Tell ConversationHandler that we're in state `FIRST` now
     return MENU_ROUTES
 
 
@@ -118,7 +136,7 @@ async def daily_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 InlineKeyboardButton("🔢 Word Quentity", callback_data=str("word_quentity")),
             ],
             [
-                InlineKeyboardButton("☰ Menu", callback_data=str("menu")),
+                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
             ]
         ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -128,32 +146,117 @@ async def daily_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return MENU_ROUTES
 
 
-async def vocabulary(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    return END_MENU_ROUTES
+async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    keyboard = [
+            [
+                InlineKeyboardButton("🔠 Native Language", callback_data=str(NATIVE_LANGUAGE)),
+                InlineKeyboardButton("🌐 Language To Learn", callback_data=str(LANGUAGE_TO_LEARN)),
+            ],
+            [
+                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
+                InlineKeyboardButton("🎓 Knowlage Level", callback_data=str(KNOWLEGE_LEVEL)),
+            ]
+        ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(
+        text="⚙️ settings", reply_markup=reply_markup
+    )
+    return MENU_ROUTES
 
-async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
+async def vocabulary(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    keyboard = [
+            [
+                InlineKeyboardButton(" All Words", callback_data=str(NATIVE_LANGUAGE)),
+                InlineKeyboardButton(" Programming", callback_data=str(LANGUAGE_TO_LEARN)),
+            ],
+            [
+                InlineKeyboardButton(" Medicine", callback_data=str(NATIVE_LANGUAGE)),
+                InlineKeyboardButton(" Tech", callback_data=str(LANGUAGE_TO_LEARN)),
+            ],
+            [
+                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
+                InlineKeyboardButton("🎓 Science", callback_data=str(KNOWLEGE_LEVEL)),
+            ]
+        ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(
+        text="⚙️ settings", reply_markup=reply_markup
+    )
+    return MENU_ROUTES
+
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    keyboard = [
+            [
+                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
+            ]
+        ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(
+        text="❓ hear should be help information", reply_markup=reply_markup
+    )
+    return MENU_ROUTES
 
 async def search_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
+    query = update.callback_query
+    await query.answer()
+    keyboard = [
+            [
+                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
+            ]
+        ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(
+        text="🔍 hear should be word search logic", reply_markup=reply_markup
+    )
+    return MENU_ROUTES
 
 async def archive(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    keyboard = [
+            [
+                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
+            ]
+        ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(
+        text="🗂️ hear should be word archive logic", reply_markup=reply_markup
+    )
+    return MENU_ROUTES
+
+async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    query = update.callback_query
+    await query.answer()
+    keyboard = [
+            [
+                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
+            ]
+        ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await query.edit_message_text(
+        text="🎯 hear should be quiz logic", reply_markup=reply_markup
+    )
+    return MENU_ROUTES
+
+
+async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     pass
 
-async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def knowlege_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pass
+
+async def language_to_learn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     pass
 
 async def categories(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     pass
 
-async def categories(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
-
-async def word_quentity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
-
-async def word_quentity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
 
 
 

@@ -30,14 +30,32 @@ from telegram.ext import (
 )
 
 from apps.telegrambot.handlers import (
-    start,
+    MENU,
     MENU_ROUTES,
     DAILY_WORD,
     VOCABULARY,
-    start_over,
+    LANGUAGE_TO_LEARN,
+    KNOWLEGE_LEVEL,
+    LANGUAGE_TO_LEARN,
+    NATIVE_LANGUAGE,
     END_MENU_ROUTES,
+    SETTINGS,
+    HELP,
+    SEARCH,
+    ARCHIVE,
+    QUIZ,
+    archive,
+    search_word,
+    native_language,
+    knowlege_level,
+    language_to_learn,
     daily_word,
     vocabulary,
+    menu,
+    start,
+    settings,
+    help,
+    quiz,
     
 )
 
@@ -45,7 +63,7 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-PUBLIC_URL = "https://0b40-83-250-15-222.ngrok-free.app"
+PUBLIC_URL = "https://676c-83-250-15-222.ngrok-free.app"
 
 
 # Enable logging
@@ -156,9 +174,19 @@ conv_handler = ConversationHandler(
             MENU_ROUTES: [
                 CallbackQueryHandler(daily_word, pattern="^" + str(DAILY_WORD) + "$"),
                 CallbackQueryHandler(vocabulary, pattern="^" + str(VOCABULARY) + "$"),
+                CallbackQueryHandler(native_language, pattern="^" + str(NATIVE_LANGUAGE) + "$"),
+                CallbackQueryHandler(language_to_learn, pattern="^" + str(LANGUAGE_TO_LEARN) + "$"),
+                CallbackQueryHandler(settings, pattern="^" + str(SETTINGS) + "$"),
+                CallbackQueryHandler(menu, pattern="^" + str(MENU) + "$"),
+                CallbackQueryHandler(vocabulary, pattern="^" + str(VOCABULARY) + "$"),
+                CallbackQueryHandler(help, pattern="^" + str(HELP) + "$"),
+                CallbackQueryHandler(search_word, pattern="^" + str(SEARCH) + "$"),
+                CallbackQueryHandler(archive, pattern="^" + str(ARCHIVE) + "$"),
+                CallbackQueryHandler(quiz, pattern="^" + str(QUIZ) + "$"),
+                  
             ],
             END_MENU_ROUTES: [
-                CallbackQueryHandler(start_over, pattern="^" + str(DAILY_WORD) + "$"),
+                CallbackQueryHandler(menu, pattern="^" + str(DAILY_WORD) + "$"),
             ],
         },
         fallbacks=[CommandHandler("start", start)],
@@ -166,7 +194,6 @@ conv_handler = ConversationHandler(
 
     # Add ConversationHandler to application that will be used for handling updates
 ptb_application.add_handler(conv_handler)
-
 
 urls.urlpatterns.extend([
     path("telegram", telegram, name="Telegram updates"),
