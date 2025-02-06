@@ -7,7 +7,6 @@ from django.views.decorators.csrf import csrf_exempt
 
  # Adjus
 import uvicorn
-from django.conf import settings
 from django.core.asgi import get_asgi_application
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
 from django.urls import path
@@ -32,20 +31,21 @@ from telegram.ext import (
 
 from apps.telegrambot.handlers import (
     start,
-    native_language,
-    language_to_learn,
-    language_knowlege_level,
-    LANGUAGE_TO_LEARN,
-    CONTINUE,
-    ENGLISH_KNOWLEGE_LEVEL,
-    unknown,
+    MENU_ROUTES,
+    DAILY_WORD,
+    VOCABULARY,
+    start_over,
+    END_MENU_ROUTES,
+    daily_word,
+    vocabulary,
+    
 )
 
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-PUBLIC_URL = "https://f4ce-83-250-15-222.ngrok-free.app"
+PUBLIC_URL = "https://0b40-83-250-15-222.ngrok-free.app"
 
 
 # Enable logging
@@ -148,17 +148,24 @@ ptb_application = (
 
 # register handlers
 ptb_application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
+
+
 conv_handler = ConversationHandler(
-    entry_points=[CommandHandler("start", start)],
-    states={
-        CONTINUE: [CallbackQueryHandler(native_language)],
-        LANGUAGE_TO_LEARN: [CallbackQueryHandler(language_to_learn)],
-        ENGLISH_KNOWLEGE_LEVEL: [CallbackQueryHandler(language_knowlege_level)],
-    },
-    fallbacks=[MessageHandler(filters.TEXT, unknown)],
-)
+        entry_points=[CommandHandler("start", start)],
+        states={
+            MENU_ROUTES: [
+                CallbackQueryHandler(daily_word, pattern="^" + str(DAILY_WORD) + "$"),
+                CallbackQueryHandler(vocabulary, pattern="^" + str(VOCABULARY) + "$"),
+            ],
+            END_MENU_ROUTES: [
+                CallbackQueryHandler(start_over, pattern="^" + str(DAILY_WORD) + "$"),
+            ],
+        },
+        fallbacks=[CommandHandler("start", start)],
+    )
+
+    # Add ConversationHandler to application that will be used for handling updates
 ptb_application.add_handler(conv_handler)
-ptb_application.add_handler(CommandHandler("start", start))
 
 
 urls.urlpatterns.extend([
@@ -191,3 +198,41 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    #     states={
+#         CONTINUE: [CallbackQueryHandler(native_language)],
+#         LANGUAGE_TO_LEARN: [CallbackQueryHandler(language_to_learn)],
+#         ENGLISH_KNOWLEGE_LEVEL: [CallbackQueryHandler(language_knowlege_level)],
+#     },
+#     fallbacks=[MessageHandler(filters.TEXT, unknown)],
+# )
+# ptb_application.add_handler(conv_handler)
+# ptb_application.add_handler(CommandHandler("start", start))

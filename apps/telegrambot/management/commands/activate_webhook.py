@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from django.core.management.base import BaseCommand
-from apps.telegrambot.activate_webhook import main  # Import the async main function
+from apps.telegrambot.webhook import main  # Import the async main function
 
 logger = logging.getLogger(__name__)
 
