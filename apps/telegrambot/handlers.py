@@ -84,32 +84,31 @@ markup_languages = InlineKeyboardMarkup(
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start the conversation and ask user for input."""
-    user = await user_exist(user_chat_id=update.message.chat.id)
-    if not user:
-        await create_user(
-            user_chat_id=update.message.chat.id,
-            username=update.message.from_user.first_name,
-            language_code=update.message.from_user.language_code,
-        )
-        keyboard = [[InlineKeyboardButton("Continue", callback_data="continue")]]
+    # user = await user_exist(user_chat_id=update.message.chat.id)
+    # await create_user(
+    #     user_chat_id=update.message.chat.id,
+    #     username=update.message.from_user.first_name,
+    #     language_code=update.message.from_user.language_code,
+    # )
+    keyboard = [[InlineKeyboardButton("Continue", callback_data="continue")]]
 
-        reply_markup = InlineKeyboardMarkup(keyboard)
-        await update.message.reply_text(
-            f"""🎉 Welcome {str(update.message.from_user.first_name)} to Daily Word Bot ! 🎉
+    reply_markup = InlineKeyboardMarkup(keyboard)
+    await update.message.reply_text(
+        f"""🎉 Welcome {str(update.message.from_user.first_name)} to Daily Word Bot ! 🎉
 
-    Your ultimate companion for building your vocabulary, one word at a time (or more)!
+Your ultimate companion for building your vocabulary, one word at a time (or more)!
 
-    📚 Pick words from various categories that interest you.
-    📖 Save and organize words in your personalized dictionaries.
-    📅 Get one or multiple words delivered to you every day!
-    📝 Challenge yourself with quizzes to reinforce your learning.
+📚 Pick words from various categories that interest you.
+📖 Save and organize words in your personalized dictionaries.
+📅 Get one or multiple words delivered to you every day!
+📝 Challenge yourself with quizzes to reinforce your learning.
 
-    Let’s make learning fun and exciting! 🥳
+Let’s make learning fun and exciting! 🥳
 
-    Ready to start? Tap continue! 👇
-    """,
-            reply_markup=reply_markup,
-        )
+Ready to start? Tap continue! 👇
+""",
+        reply_markup=reply_markup,
+    )
     return CONTINUE
 
 
@@ -391,16 +390,16 @@ async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     return MENU_ROUTES
 
 
-async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
+# async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+#     pass
 
-async def knowlege_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
+# async def knowlege_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+#     pass
 
-async def language_to_learn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
+# async def language_to_learn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+#     pass
 
-async def categories(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    pass
+# async def categories(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+#     pass
 
 

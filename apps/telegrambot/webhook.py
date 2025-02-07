@@ -51,7 +51,6 @@ from apps.telegrambot.handlers import (
     archive,
     search_word,
     native_language,
-    knowlege_level,
     language_to_learn,
     daily_word,
     vocabulary,
@@ -197,11 +196,11 @@ conv_handler = ConversationHandler(
     # Add ConversationHandler to application that will be used for handling updates
 # ptb_application.add_handler(start_conv)
 ptb_application.add_handler(conv_handler)
-ptb_application.add_handler(CommandHandler("start", start))
-ptb_application.add_handler(CommandHandler("help", help))
-ptb_application.add_handler(CommandHandler("menu", menu))
-ptb_application.add_handler(CommandHandler("daily_word", daily_word))
-ptb_application.add_handler(CommandHandler("settings", settings))
+# ptb_application.add_handler(CommandHandler("start", start))
+# ptb_application.add_handler(CommandHandler("help", help))
+# ptb_application.add_handler(CommandHandler("menu", menu))
+# ptb_application.add_handler(CommandHandler("daily_word", daily_word))
+# ptb_application.add_handler(CommandHandler("settings", settings))
 
 
 urls.urlpatterns.extend([
