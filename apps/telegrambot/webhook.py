@@ -38,7 +38,7 @@ from apps.telegrambot.handlers import (
     KNOWLEGE_LEVEL,
     LANGUAGE_TO_LEARN,
     NATIVE_LANGUAGE,
-    END_MENU_ROUTES,
+    MENU_CONV,
     SETTINGS,
     HELP,
     SEARCH,
@@ -46,6 +46,7 @@ from apps.telegrambot.handlers import (
     QUIZ,
     CONTINUE,
     ENGLISH_KNOWLEGE_LEVEL,
+    FINISH_REGISTRATION,
     language_knowlege_level,
     archive,
     search_word,
@@ -59,6 +60,7 @@ from apps.telegrambot.handlers import (
     settings,
     help,
     quiz,
+    to_menu
     
 )
 
@@ -66,7 +68,7 @@ load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-PUBLIC_URL = "https://676c-83-250-15-222.ngrok-free.app"
+PUBLIC_URL = "https://df29-83-250-15-222.ngrok-free.app"
 
 
 # Enable logging
@@ -167,22 +169,14 @@ ptb_application = (
     .build()
 )
 
-# register handlers
-ptb_application.add_handler(TypeHandler(type=WebhookUpdate, callback=webhook_update))
-start_conv = ConversationHandler(
+
+conv_handler = ConversationHandler(
         entry_points=[CommandHandler("start", start)],
         states={
             CONTINUE: [CallbackQueryHandler(native_language)],
             LANGUAGE_TO_LEARN: [CallbackQueryHandler(language_to_learn)],
             ENGLISH_KNOWLEGE_LEVEL: [CallbackQueryHandler(language_knowlege_level)],
-        },
-        fallbacks=[CommandHandler("start", start)],
-    )
-
-      
-conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("menu", menu)],
-        states={
+            FINISH_REGISTRATION: [CallbackQueryHandler(to_menu)],
             MENU_ROUTES: [
                 CallbackQueryHandler(daily_word, pattern="^" + str(DAILY_WORD) + "$"),
                 CallbackQueryHandler(vocabulary, pattern="^" + str(VOCABULARY) + "$"),
@@ -190,22 +184,21 @@ conv_handler = ConversationHandler(
                 CallbackQueryHandler(language_to_learn, pattern="^" + str(LANGUAGE_TO_LEARN) + "$"),
                 CallbackQueryHandler(settings, pattern="^" + str(SETTINGS) + "$"),
                 CallbackQueryHandler(menu, pattern="^" + str(MENU) + "$"),
-                CallbackQueryHandler(vocabulary, pattern="^" + str(VOCABULARY) + "$"),
                 CallbackQueryHandler(help, pattern="^" + str(HELP) + "$"),
                 CallbackQueryHandler(search_word, pattern="^" + str(SEARCH) + "$"),
                 CallbackQueryHandler(archive, pattern="^" + str(ARCHIVE) + "$"),
                 CallbackQueryHandler(quiz, pattern="^" + str(QUIZ) + "$"),
             ],
-            END_MENU_ROUTES: [
-                CallbackQueryHandler(menu, pattern="^" + str(DAILY_WORD) + "$"),
-            ],
         },
         fallbacks=[CommandHandler("menu", menu)],
+
     )
 
     # Add ConversationHandler to application that will be used for handling updates
+# ptb_application.add_handler(start_conv)
 ptb_application.add_handler(conv_handler)
-ptb_application.add_handler(start_conv)
+
+
 
 urls.urlpatterns.extend([
     path("telegram", telegram, name="Telegram updates"),

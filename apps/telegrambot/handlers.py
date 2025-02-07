@@ -37,8 +37,11 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
+#registartration
+CONTINUE, LANGUAGE_TO_LEARN, ENGLISH_KNOWLEGE_LEVEL,FINISH_REGISTRATION = map(chr,range(4))
+
 # Stages
-MENU_ROUTES, END_MENU_ROUTES = range(2)
+MENU_ROUTES, MENU_CONV = map(chr,range(4, 6))
 # Callback data
 (   
     DAILY_WORD, 
@@ -52,7 +55,7 @@ MENU_ROUTES, END_MENU_ROUTES = range(2)
     SEARCH,
     ARCHIVE,
     QUIZ,  
-) = range(11)
+) = map(chr,range(6, 17))
 
 # async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 #     """Send message on `/start`."""
@@ -79,10 +82,10 @@ MENU_ROUTES, END_MENU_ROUTES = range(2)
 #     # Send message with text and appended InlineKeyboard
 #     await update.message.reply_text(
 # text="""Hey!👋 Welcome to the Daily Word Bot! 🌟
-# 
+
 # You can find words and their descriptions, set up a daily word, 
 # select categories, save them, and learn them. 📚✨
-# 
+
 # Use the menu below for all options! ⬇️
 # For assistance, select /help """,
 # reply_markup=reply_markup)
@@ -283,9 +286,6 @@ markup_languages = InlineKeyboardMarkup(
     ]
 )
 
-CONTINUE, LANGUAGE_TO_LEARN, ENGLISH_KNOWLEGE_LEVEL = range(3)
-
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Start the conversation and ask user for input."""
     user = await user_exist(user_chat_id=update.message.chat.id)
@@ -379,8 +379,29 @@ Once you pick your level, we’ll get started! 🚀
         user_chat_id=update.callback_query.message.chat.id,
         language_knowlege_level=update.callback_query.data,
     )
-    return MENU
+    return FINISH_REGISTRATION
 
+
+async def to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    language_level_markup = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("LET'S BEGIN!!", callback_data=MENU),
+            ]
+        ]
+    )
+    await update.callback_query.answer()
+    await update.callback_query.message.reply_text(
+        f""" ✅ Thank you for registering your information! 🎉 Now, 
+you can go to the menu to see all options.
+    """,
+        reply_markup=language_level_markup,
+    )
+    await set_user_language_knowlege_level(
+        user_chat_id=update.callback_query.message.chat.id,
+        language_knowlege_level=update.callback_query.data,
+    )
+    return MENU_ROUTES
 
 async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
