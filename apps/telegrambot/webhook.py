@@ -35,23 +35,21 @@ from apps.telegrambot.handlers import (
     DAILY_WORD,
     VOCABULARY,
     LANGUAGE_TO_LEARN,
-    KNOWLEGE_LEVEL,
     LANGUAGE_TO_LEARN,
     NATIVE_LANGUAGE,
-    MENU_CONV,
     SETTINGS,
     HELP,
     SEARCH,
     ARCHIVE,
     QUIZ,
     CONTINUE,
-    ENGLISH_KNOWLEGE_LEVEL,
+    ENGLISH_KNOWLEDGE_LEVEL,
     FINISH_REGISTRATION,
-    language_knowlege_level,
+    language_knowledge_level_start,
     archive,
     search_word,
-    native_language,
-    language_to_learn,
+    native_language_start,
+    language_to_learn_start,
     daily_word,
     vocabulary,
     menu,
@@ -59,15 +57,19 @@ from apps.telegrambot.handlers import (
     settings,
     help,
     quiz,
-    to_menu
+    to_menu_start,
+    knowledge_level,
+    native_language,
+    language_to_learn
+    
     
 )
 
-load_dotenv()
+load_dotenv(override=True)
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-PUBLIC_URL = "https://df29-83-250-15-222.ngrok-free.app"
+PUBLIC_URL = "https://40f8-83-250-15-222.ngrok-free.app"
 
 
 # Enable logging
@@ -170,12 +172,12 @@ ptb_application = (
 
 
 conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[CommandHandler("menu", menu)],
         states={
-            CONTINUE: [CallbackQueryHandler(native_language)],
-            LANGUAGE_TO_LEARN: [CallbackQueryHandler(language_to_learn)],
-            ENGLISH_KNOWLEGE_LEVEL: [CallbackQueryHandler(language_knowlege_level)],
-            FINISH_REGISTRATION: [CallbackQueryHandler(to_menu)],
+            CONTINUE: [CallbackQueryHandler(native_language_start)],
+            LANGUAGE_TO_LEARN: [CallbackQueryHandler(language_to_learn_start)],
+            ENGLISH_KNOWLEDGE_LEVEL: [CallbackQueryHandler(language_knowledge_level_start)],
+            FINISH_REGISTRATION: [CallbackQueryHandler(to_menu_start)],
             MENU_ROUTES: [
                 CallbackQueryHandler(daily_word, pattern="^" + str(DAILY_WORD) + "$"),
                 CallbackQueryHandler(vocabulary, pattern="^" + str(VOCABULARY) + "$"),
@@ -187,9 +189,21 @@ conv_handler = ConversationHandler(
                 CallbackQueryHandler(search_word, pattern="^" + str(SEARCH) + "$"),
                 CallbackQueryHandler(archive, pattern="^" + str(ARCHIVE) + "$"),
                 CallbackQueryHandler(quiz, pattern="^" + str(QUIZ) + "$"),
+                CommandHandler("menu",menu),
+                CommandHandler("settings",settings),
+                CommandHandler("help",help),
+                CommandHandler("search_word",search_word),
+                CommandHandler("daily_word",daily_word),
+                CommandHandler("vocabulary",vocabulary),
+                CommandHandler("native_language",native_language),
+                CommandHandler("language_to_learn",language_to_learn),
+                CommandHandler("archive",archive),
+                CommandHandler("quiz",quiz),        
             ],
         },
-        fallbacks=[CommandHandler("menu", menu)],
+        fallbacks=[
+            CommandHandler("menu", menu),
+        ],
 
     )
 

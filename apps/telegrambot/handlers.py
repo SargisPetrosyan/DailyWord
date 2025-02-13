@@ -1,68 +1,89 @@
-from telegram import (
-    Update,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
+# python-telegram-bot lib and telegam.
+from telegram import Update,InlineKeyboardButton,InlineKeyboardMarkup
+from telegram.ext import ContextTypes
+
+from functools import wraps
+
+# Telegram messages and markups for buttons.
+from .messages import (
+    WELCOME_MESSAGE_TEXT,
+    NATIVE_LANGUAGE_TEXT,
+    LANGUAGE_KNOWLEDGE_LEVEL_TEXT,
+    LANGUAGE_TO_LEARN_TEXT,
+    UNKNOWN_MESSAGE_TEXT,
+    TO_MENU_TEXT,
+    MAIN_MENU_TEXT,
+    DAILY_WORD_SETTINGS_TEXT,
+    SETTINGS_TEXT,
+    VOCABULARY_TEXT,
+    SEARCH_WORD_TEXT,
+    ARCHIVE_TEXT,
+    QUIZ_TEXT 
 )
 
-from telegram.ext import (
-    ContextTypes,
-    ConversationHandler,
-)
+(
+LANGUAGE_TO_LEARN, 
+ENGLISH_KNOWLEDGE_LEVEL,
+FINISH_REGISTRATION,
+CONTINUE,
+MENU_ROUTES,
+DAILY_WORD, 
+VOCABULARY,
+MENU, 
+KNOWLEDGE_LEVEL, 
+NATIVE_LANGUAGE,
+LANGUAGE_TO_LEARN,
+SETTINGS,
+HELP,
+SEARCH,
+ARCHIVE,
+QUIZ
+) = map(chr, range(16))
 
-from apps.telegrambot.services import (
-    create_user,
-    user_exist,
-    set_native_language,
-    set_language_to_learn,
-    set_user_language_knowlege_level,
-)
+from functools import wraps
+from telegram import Update
+
+#telegram services
+from apps.telegrambot.services import QueryType
 
 import logging
-
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
-from telegram.ext import (
-    Application,
-    CallbackQueryHandler,
-    CommandHandler,
-    ContextTypes,
-    ConversationHandler,
-)
 
 # Enable logging
 logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
+
 # set higher logging level for httpx to avoid all GET and POST requests being logged
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-#registartration
-CONTINUE, LANGUAGE_TO_LEARN, ENGLISH_KNOWLEGE_LEVEL,FINISH_REGISTRATION = map(chr,range(4))
-
-# Stages
-MENU_ROUTES, MENU_CONV = map(chr,range(4, 6))
 # Callback data
-(   
-    DAILY_WORD, 
-    VOCABULARY,
-    MENU, 
-    KNOWLEGE_LEVEL, 
-    NATIVE_LANGUAGE,
-    LANGUAGE_TO_LEARN,
-    SETTINGS,
-    HELP,
-    SEARCH,
-    ARCHIVE,
-    QUIZ,  
-) = map(chr,range(6, 17))
 
-languages = [
-    ["English", "Spanish", "French"],
-    ["Russian", "Chinese", "Hindi"],
-    ["Portuguese", "Japanese", "German"],
-]
-markup_languages = InlineKeyboardMarkup(
+
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Start the conversation with a welcome message and ask user to continue."""
+    
+    # Define the inline keyboard with a "Continue" button
+    keyboard = [[InlineKeyboardButton("Continue", callback_data="continue")]]
+    start_markup = InlineKeyboardMarkup(keyboard)
+    
+    # Format the welcome message with the user's first name
+    message = WELCOME_MESSAGE_TEXT.format(first_name = update.message.from_user.first_name)
+    
+    # Send the formatted welcome message along with the inline keyboard
+    await update.callback_query.edit_message_text(text=message, reply_markup=start_markup,)
+    
+    return CONTINUE
+
+
+async def native_language_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Ask the user to select their native language"""
+    
+    # Acknowledge the callback query
+    await update.callback_query.answer()
+     
+    native_language_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
     [
         [
             InlineKeyboardButton("English", callback_data="en"),
@@ -80,202 +101,133 @@ markup_languages = InlineKeyboardMarkup(
             InlineKeyboardButton("German ", callback_data="de"),
         ],
     ]
-)
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Start the conversation and ask user for input."""
-    # user = await user_exist(user_chat_id=update.message.chat.id)
-    # await create_user(
-    #     user_chat_id=update.message.chat.id,
-    #     username=update.message.from_user.first_name,
-    #     language_code=update.message.from_user.language_code,
-    # )
-    keyboard = [[InlineKeyboardButton("Continue", callback_data="continue")]]
-
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        f"""🎉 Welcome {str(update.message.from_user.first_name)} to Daily Word Bot ! 🎉
-
-Your ultimate companion for building your vocabulary, one word at a time (or more)!
-
-📚 Pick words from various categories that interest you.
-📖 Save and organize words in your personalized dictionaries.
-📅 Get one or multiple words delivered to you every day!
-📝 Challenge yourself with quizzes to reinforce your learning.
-
-Let’s make learning fun and exciting! 🥳
-
-Ready to start? Tap continue! 👇
-""",
-        reply_markup=reply_markup,
-    )
-    return CONTINUE
-
-
-async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # Handle other cases or log an error
-
-    await update.callback_query.answer()
-    await update.callback_query.message.reply_text(
-        """Before we start, please select your languages:
-        🌐 From: (Your native language)""",
-        reply_markup=markup_languages,
     )
     
-    await set_native_language(
-        user_chat_id=update.callback_query.message.chat.id,
-        native_language=update.callback_query.data,
+    # Prompt user to choose their ative with inline keyboard
+    await update.callback_query.edit_message_text(
+        text=NATIVE_LANGUAGE_TEXT,
+        reply_markup=native_language_markup,
     )
+
     return LANGUAGE_TO_LEARN
 
 
-async def language_to_learn(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.callback_query.message.reply_text(
-        """Now you chose languge that want to learn:
-        🌐 To: (language thet want to learn)""",
-        reply_markup=markup_languages,
-    )
-    await set_language_to_learn(
-        user_chat_id=update.callback_query.message.chat.id,
-        language_to_learn=update.callback_query.data,
-    )
-
-    return ENGLISH_KNOWLEGE_LEVEL
-
-
-async def language_knowlege_level(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    language_level_markup = InlineKeyboardMarkup(
+async def language_to_learn_start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    """Ask the user to select the language they want to learn."""
+    language_to_learn: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    [
         [
-            [
-                InlineKeyboardButton("Beginner", callback_data="beginner"),
-                InlineKeyboardButton("Intermiediate", callback_data="intermiediate"),
-                InlineKeyboardButton("Advance", callback_data="advance"),
-            ]
+            InlineKeyboardButton("English", callback_data="en"),
+            InlineKeyboardButton("Spanish", callback_data="es"),
+            InlineKeyboardButton("French", callback_data="fr"),
+        ],
+        [
+            InlineKeyboardButton("Russian", callback_data="ru"),
+            InlineKeyboardButton("Chinese", callback_data="zh"),
+            InlineKeyboardButton("Hindi", callback_data="hi"),
+        ],
+        [
+            InlineKeyboardButton("Portuguese ", callback_data="pt"),
+            InlineKeyboardButton("Japanese ", callback_data="ja"),
+            InlineKeyboardButton("German ", callback_data="de"),
+        ],
+    ]
+    )
+    # Prompt user to choose language to learn with inline keyboard
+    await update.callback_query.edit_message_text(
+        text=LANGUAGE_TO_LEARN_TEXT, reply_markup=language_to_learn,
+    )
+    
+    return ENGLISH_KNOWLEDGE_LEVEL
+
+
+async def language_knowledge_level_start(update: Update, context: ContextTypes.DEFAULT_TYPE)-> None:
+    """Ask the user to select their language knowledge level"""
+    
+    # Define the inline keyboard for language levels
+    language_level_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    [
+        [
+            InlineKeyboardButton("Beginner", callback_data="beginner"),
+            InlineKeyboardButton("Intermiediate", callback_data="intermiediate"),
+            InlineKeyboardButton("Advance", callback_data="advance"),
         ]
-    )
+    ]
+)
+    
     await update.callback_query.answer()
-    await update.callback_query.message.reply_text(
-        f""" ✨ You're almost there! ✨
-
-🎯 Please select your English knowledge level:
-😊 Don’t worry! The bot will adjust to you,
-changing word difficulty based on your progress.
-
-Once you pick your level, we’ll get started! 🚀
-    """,
-        reply_markup=language_level_markup,
+    
+    # Prompt user to choose their language level with inline keyboard
+    await update.callback_query.edit_message_text(
+        LANGUAGE_KNOWLEDGE_LEVEL_TEXT, reply_markup=language_level_markup,
     )
-    await set_user_language_knowlege_level(
-        user_chat_id=update.callback_query.message.chat.id,
-        language_knowlege_level=update.callback_query.data,
-    )
+    
     return FINISH_REGISTRATION
+    
 
-
-async def to_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    language_level_markup = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton("LET'S BEGIN!!", callback_data=MENU),
-            ]
-        ]
-    )
+async def to_menu_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Go to menu"""
+    
     await update.callback_query.answer()
-    await update.callback_query.message.reply_text(
-        f""" ✅ Thank you for registering your information! 🎉 Now, 
-you can go to the menu to see all options.
-    """,
-        reply_markup=language_level_markup,
+    
+    # Send message with inline keyboard
+    await update.callback_query.edit_message_text(
+        text = TO_MENU_TEXT,
+        reply_markup = InlineKeyboardMarkup(
+        [[InlineKeyboardButton("LET'S BEGIN!!", callback_data=MENU)]]
+    ),
     )
-    await set_user_language_knowlege_level(
-        user_chat_id=update.callback_query.message.chat.id,
-        language_knowlege_level=update.callback_query.data,
-    )
+
     return MENU_ROUTES
 
-async def unknown(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Sorry, I didn’t understand that. Please choose a valid option."
-    )
 
-
-# async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     """Send message on `/start`."""
-#     user = update.message.from_user
-#     logger.info("User %s started the conversation.", user.first_name)
-#     keyboard = [
-#         [
-#             InlineKeyboardButton("📆 Word of Day", callback_data=str(DAILY_WORD)),
-#             InlineKeyboardButton("📖 Vocabulary", callback_data=str(VOCABULARY)),
-#         ],
-#         [
-#             InlineKeyboardButton("🎯 Quiz", callback_data=str("quiz")),
-#             InlineKeyboardButton("🔍 Search Word", callback_data=str("search_word")),
-#         ],
-#         [
-#             InlineKeyboardButton("🗂️ Archive", callback_data=str("archive")),
-#             InlineKeyboardButton("❓ Help", callback_data=str("help")),
-#         ],
-#         [
-#             InlineKeyboardButton("⚙️ Settings", callback_data=str("settings")),
-#         ]
-#     ]
-#     reply_markup = InlineKeyboardMarkup(keyboard)
-#     # Send message with text and appended InlineKeyboard
-#     await update.message.reply_text(
-# text="""Hey!👋 Welcome to the Daily Word Bot! 🌟
-
-# You can find words and their descriptions, set up a daily word, 
-# select categories, save them, and learn them. 📚✨
-
-# Use the menu below for all options! ⬇️
-# For assistance, select /help """,
-# reply_markup=reply_markup)
-#     # Tell ConversationHandler that we're in state `FIRST` now
-#     return MENU_ROUTES
-
+async def unknown_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """reply UNKNOWN_TEXT command"""
+    await update.message.reply_text(UNKNOWN_MESSAGE_TEXT)
 
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Send message on `/menu`."""
-    query = update.callback_query
-    # logger.info("User %s started the conversation.", query.first_name)
-    keyboard = [
-        [
-            InlineKeyboardButton("📆 Word of Day", callback_data=str(DAILY_WORD)),
-            InlineKeyboardButton("📖 Vocabulary", callback_data=str(VOCABULARY)),
-        ],
-        [
-            InlineKeyboardButton("🎯 Quiz", callback_data=str(QUIZ)),
-            InlineKeyboardButton("🔍 Search Word", callback_data=str(SEARCH)),
-        ],
-        [
-            InlineKeyboardButton("🗂️ Archive", callback_data=str(ARCHIVE)),
-            InlineKeyboardButton("❓ Help", callback_data=str(HELP)),
-        ],
-        [
-            InlineKeyboardButton("⚙️ Settings", callback_data=str(SETTINGS)),
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
+    """Menu section where all options are visible"""
+   
+    # check query type.
+    await QueryType.check_query_type(update=update)
+    
+    # Define the main manu inline keyboard markup
+    main_menu_markup: InlineKeyboardMarkup = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("📆 Daily Word", callback_data=str(DAILY_WORD)),
+                InlineKeyboardButton("📖 Vocabulary", callback_data=str(VOCABULARY)),
+            ],
+            [
+                InlineKeyboardButton("🎯 Quiz ", callback_data=str(QUIZ)),
+                InlineKeyboardButton("🔍 Search Word", callback_data=str(SEARCH)),
+            ],
+            [
+                InlineKeyboardButton("🗂️ Archive", callback_data=str(ARCHIVE)),
+                InlineKeyboardButton("❓ Help", callback_data=str(HELP)),
+            ],
+            [
+                InlineKeyboardButton("⚙️ Settings", callback_data=str(SETTINGS)),
+            ]
+    ])
+    
     # Send message with text and appended InlineKeyboard
-    await query.edit_message_text(
-text="""Hey!👋 Welcome to the Daily Word Bot! 🌟
-
-You can find words and their descriptions, set up a daily word, 
-select categories, save them, and learn them. 📚✨
-
-Use the menu below for all options! ⬇️
-For assistance, select /help """,
-reply_markup=reply_markup)
-    # Tell ConversationHandler that we're in state `FIRST` now
+    await QueryType.reply_query(
+            update=update, 
+            reply_text=MAIN_MENU_TEXT, 
+            reply_markup=main_menu_markup
+            )
+    
     return MENU_ROUTES
 
-
 async def daily_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
+    """Daily Word section where you can set up daily word settings"""
+    
+    # check query type.
+    await QueryType.check_query_type(update=update)
+    
+    # Define the daily word inline keyboard markup
+    daily_word_markup: InlineKeyboardMarkup = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("🏷️ Categories", callback_data=str("categories")),
                 InlineKeyboardButton("🔢 Word Quentity", callback_data=str("word_quentity")),
@@ -283,123 +235,159 @@ async def daily_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             [
                 InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
             ]
-        ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="📆 hear you can change Daily Word settings", reply_markup=reply_markup
-    )
+        ])
+    
+    # Send message with text and appended InlineKeyboard
+    await QueryType.reply_query(
+            update=update, 
+            reply_text= DAILY_WORD_SETTINGS_TEXT, 
+            reply_markup=daily_word_markup
+            )
+    
     return MENU_ROUTES
 
-
 async def settings(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
+    """Settings section where you can edit settings"""
+   
+    # Check query type.
+    await QueryType.check_query_type(update)
+    
+    # Define the settings inline keyboard markup
+    settings_markup: InlineKeyboardMarkup = InlineKeyboardMarkup(
+        [
             [
                 InlineKeyboardButton("🔠 Native Language", callback_data=str(NATIVE_LANGUAGE)),
                 InlineKeyboardButton("🌐 Language To Learn", callback_data=str(LANGUAGE_TO_LEARN)),
             ],
             [
                 InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
-                InlineKeyboardButton("🎓 Knowlage Level", callback_data=str(KNOWLEGE_LEVEL)),
+                InlineKeyboardButton("🎓 Knowledge Level", callback_data=str(KNOWLEDGE_LEVEL)),
             ]
         ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="⚙️ settings", reply_markup=reply_markup
     )
+    
+    # Send message with text and appended InlineKeyboard
+    await QueryType.reply_query(
+        update=update, reply_text=SETTINGS_TEXT, reply_markup=settings_markup
+    )
+    
     return MENU_ROUTES
+
+
 
 async def vocabulary(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
-            [
-                InlineKeyboardButton(" All Words", callback_data=str(NATIVE_LANGUAGE)),
-                InlineKeyboardButton(" Programming", callback_data=str(LANGUAGE_TO_LEARN)),
-            ],
-            [
-                InlineKeyboardButton(" Medicine", callback_data=str(NATIVE_LANGUAGE)),
-                InlineKeyboardButton(" Tech", callback_data=str(LANGUAGE_TO_LEARN)),
-            ],
-            [
-                InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
-                InlineKeyboardButton("🎓 Science", callback_data=str(KNOWLEGE_LEVEL)),
-            ]
+    """Settings section where you can edit settings"""
+    
+    # check query type.
+    await QueryType.check_query_type(update)
+    
+    # Define the vocabulary inline keyboard markup
+    vocabulary_markup: InlineKeyboardMarkup = InlineKeyboardMarkup([   
+        [
+            InlineKeyboardButton("🔠 Native Language", callback_data=str(NATIVE_LANGUAGE)),
+            InlineKeyboardButton("🌐 Language To Learn", callback_data=str(LANGUAGE_TO_LEARN)),
+        ],
+        [
+            InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
+            InlineKeyboardButton("🎓 Knowlage Level", callback_data=str(KNOWLEDGE_LEVEL)),
         ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="⚙️ settings", reply_markup=reply_markup
-    )
+    ])
+    
+    # Send message with text and appended InlineKeyboard
+    await QueryType.reply_query(
+        update=update, reply_text=WELCOME_MESSAGE_TEXT, reply_markup=vocabulary_markup
+        )
+
     return MENU_ROUTES
 
+
 async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
+    
+    # check query type.
+    await QueryType.check_query_type(update=update)
+    
+    # Define the help inline keyboard markup
+    vocabulary_markup: InlineKeyboardMarkup = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
             ]
-        ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="❓ hear should be help information", reply_markup=reply_markup
+    ])
+
+    # Send message with text and appended InlineKeyboards
+    await QueryType.reply_query(
+        update=update,reply_text=VOCABULARY_TEXT, reply_markup=vocabulary_markup
     )
+    
     return MENU_ROUTES
 
 async def search_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
+    
+    # check query type.
+    await QueryType.check_query_type(update)
+    
+    # Define search word inline keyboard markup
+    search_word_markup: InlineKeyboardMarkup = InlineKeyboardMarkup ([
             [
                 InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
             ]
-        ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="🔍 hear should be word search logic", reply_markup=reply_markup
+    ])
+
+    # Send message with text and appended InlineKeyboards   
+    await QueryType.reply_query(
+        update=update,reply_text=SEARCH_WORD_TEXT, reply_markup=search_word_markup
     )
+    
     return MENU_ROUTES
 
+
 async def archive(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
+    
+    # check query type.
+    await QueryType.check_query_type(update=update)
+    
+    # Define search word inline keyboard markup
+    archive_markup:InlineKeyboardMarkup = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
             ]
-        ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="🗂️ hear should be word archive logic", reply_markup=reply_markup
+    ])
+    
+    # Send message with text and appended InlineKeyboards
+    await QueryType.reply_query(
+        update=update,reply_text=ARCHIVE_TEXT, reply_markup=archive_markup
     )
+    
     return MENU_ROUTES
 
 async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    query = update.callback_query
-    await query.answer()
-    keyboard = [
+    # check query type.
+    await QueryType.check_query_type(update=update)
+    
+    # Define search word inline keyboard markup
+    quiz_markup:InlineKeyboardMarkup = InlineKeyboardMarkup(   [
             [
                 InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
             ]
-        ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await query.edit_message_text(
-        text="🎯 hear should be quiz logic", reply_markup=reply_markup
+    ])
+    
+    # Send message with text and appended InlineKeyboards
+    await QueryType.reply_query(
+        update=update, reply_text=QUIZ_TEXT, reply_markup=quiz_markup
     )
+    
     return MENU_ROUTES
 
 
-# async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     pass
+async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pass
 
-# async def knowlege_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     pass
+async def knowledge_level(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pass
 
-# async def language_to_learn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     pass
+async def language_to_learn(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pass
 
-# async def categories(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-#     pass
+async def categories(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    pass
 
 

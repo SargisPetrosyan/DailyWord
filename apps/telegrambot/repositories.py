@@ -9,7 +9,7 @@ class UserRepasitory:
         language_code: str,
         native_language: str = None,
         language_to_learn: str = None,
-        language_knowlege_level: str = None,
+        language_knowledge_level: str = None,
     ) -> User:
         user = User(
             user_chat_id=user_chat_id,
@@ -17,7 +17,7 @@ class UserRepasitory:
             language_code=language_code,
             native_language=native_language,
             language_to_learn=language_to_learn,
-            language_knowlege_level=language_knowlege_level,
+            language_knowledge_level=language_knowledge_level,
         )
         await user.asave()
         return user
@@ -45,11 +45,11 @@ class UserRepasitory:
         await user.asave()
 
     @staticmethod
-    async def set_user_language_knowlege_level(
-        user_chat_id: int, language_knowlege_level: str
+    async def set_user_language_knowledge_level(
+        user_chat_id: int, language_knowledge_level: str
     ) -> None:
         user = await User.objects.aget(user_chat_id=user_chat_id)
-        user.language_knowlege_level = language_knowlege_level
+        user.language_knowledge_level = language_knowledge_level
         await user.asave()
 
     # @staticmethod
