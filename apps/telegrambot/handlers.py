@@ -2,8 +2,6 @@
 from telegram import Update,InlineKeyboardButton,InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 
-from functools import wraps
-
 # Telegram messages and markups for buttons.
 from .messages import (
     WELCOME_MESSAGE_TEXT,
@@ -40,11 +38,10 @@ ARCHIVE,
 QUIZ
 ) = map(chr, range(16))
 
-from functools import wraps
 from telegram import Update
 
 #telegram services
-from apps.telegrambot.services import QueryType
+from apps.telegrambot.services import QueryType,GetWordServices
 
 import logging
 
@@ -376,6 +373,24 @@ async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
     
     return MENU_ROUTES
+
+async def word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+        # check query type.
+    word = context.args[0] if context.args else None
+    print(str(word))
+    if word:
+        # If the word is provided, send it back to the user (you can also fetch data here)
+        word_definition = await GetWordServices.get_word_definition_service(word=word)
+        await update.message.reply_text(f'word_definition: {word_definition}')
+    else:
+        # If no word is provided
+        await update.message.reply_text('Please provide a word after /word.')
+    
+    
+    return MENU_ROUTES
+    
+    
+    
 
 
 async def native_language(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

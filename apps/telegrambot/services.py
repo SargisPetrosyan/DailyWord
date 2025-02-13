@@ -1,10 +1,11 @@
 from apps.telegrambot.repositories import UserRepasitory
 
-from telegram import (
-    Update,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-)
+from telegram import Update
+
+from .requests import GetWord
+
+from typing import Optional
+
 
 
 
@@ -52,10 +53,21 @@ class QueryType:
             pass
         
     @staticmethod    
-    async def reply_query(update: Update, reply_text: str, reply_markup: list) -> None:
+    async def reply_query(update: Update, reply_text: str, reply_markup: Optional[list]= None) -> None:
         if update.callback_query:  # Button click -> Edit message
             await update.callback_query.edit_message_text(
                 text=reply_text, reply_markup=reply_markup
                 )
         elif update.message:  # Command -> Send new message
             await update.message.reply_text(text=reply_text, reply_markup=reply_markup)
+            
+class GetWordServices:
+    @staticmethod
+    async def get_word_definition_service(word: str):
+        word_data = await GetWord.get_word_definitions(word=word)
+        definition_1 = word_data[0]["text"]
+        return definition_1
+        
+        
+        
+        

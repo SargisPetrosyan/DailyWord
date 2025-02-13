@@ -60,7 +60,8 @@ from apps.telegrambot.handlers import (
     to_menu_start,
     knowledge_level,
     native_language,
-    language_to_learn
+    language_to_learn,
+    word
     
     
 )
@@ -69,7 +70,7 @@ load_dotenv(override=True)
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_BOT_CHAT_ID = os.getenv("TELEGRAM_BOT_CHAT_ID")
-PUBLIC_URL = "https://40f8-83-250-15-222.ngrok-free.app"
+PUBLIC_URL = os.getenv("PUBLIC_URL")
 
 
 # Enable logging
@@ -198,7 +199,8 @@ conv_handler = ConversationHandler(
                 CommandHandler("native_language",native_language),
                 CommandHandler("language_to_learn",language_to_learn),
                 CommandHandler("archive",archive),
-                CommandHandler("quiz",quiz),        
+                CommandHandler("quiz",quiz),
+                CommandHandler("word",word),      
             ],
         },
         fallbacks=[
