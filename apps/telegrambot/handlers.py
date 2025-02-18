@@ -1,6 +1,7 @@
-# python-telegram-bot lib and telegam.
+# python-telegram-bot lib and telegram.
 from telegram import Update,InlineKeyboardButton,InlineKeyboardMarkup
 from telegram.ext import ContextTypes
+from telegram.helpers import escape_markdown
 
 # Telegram messages and markups for buttons.
 from .messages import (
@@ -14,9 +15,10 @@ from .messages import (
     DAILY_WORD_SETTINGS_TEXT,
     SETTINGS_TEXT,
     VOCABULARY_TEXT,
-    SEARCH_WORD_TEXT,
+    SEARCH_WORD_SETTINGS_TEXT,
     ARCHIVE_TEXT,
-    QUIZ_TEXT 
+    QUIZ_TEXT,
+    SEARCH_WORD_TEXT
 )
 
 (
@@ -40,22 +42,27 @@ QUIZ
 
 from telegram import Update
 
+import logging
+
 #telegram services
-from apps.telegrambot.services import QueryType,GetWordServices
+from apps.telegrambot.services import QueryType, GetWordServices, TranslateWord
 
 import logging
 
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-
-# set higher logging level for httpx to avoid all GET and POST requests being logged
-logging.getLogger("httpx").setLevel(logging.WARNING)
-
 logger = logging.getLogger(__name__)
+# logger.setLevel(logging.INFO)
 
-# Callback data
+# ch = logging.StreamHandler()
+# ch.setLevel(logging.DEBUG)
+
+# formater = logging.Formatter('%(levelname)s -%(asctime)s - %(name)s - %(message)s')
+
+# ch.setFormatter(formater)
+
+# logger.addHandler(ch)
+
+# logging.getLogger("httpx").setLevel(logging.WARNING)
+
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -100,7 +107,7 @@ async def native_language_start(update: Update, context: ContextTypes.DEFAULT_TY
     ]
     )
     
-    # Prompt user to choose their ative with inline keyboard
+    # Prompt user to choose their active with inline keyboard
     await update.callback_query.edit_message_text(
         text=NATIVE_LANGUAGE_TEXT,
         reply_markup=native_language_markup,
@@ -146,7 +153,7 @@ async def language_knowledge_level_start(update: Update, context: ContextTypes.D
     [
         [
             InlineKeyboardButton("Beginner", callback_data="beginner"),
-            InlineKeyboardButton("Intermiediate", callback_data="intermiediate"),
+            InlineKeyboardButton("Intermediate", callback_data="intermediate"),
             InlineKeyboardButton("Advance", callback_data="advance"),
         ]
     ]
@@ -185,11 +192,12 @@ async def unknown_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Menu section where all options are visible"""
-   
+    
     # check query type.
     await QueryType.check_query_type(update=update)
     
-    # Define the main manu inline keyboard markup
+    logger.info("start menu function")
+    # Define the main menu inline keyboard markup
     main_menu_markup: InlineKeyboardMarkup = InlineKeyboardMarkup([
             [
                 InlineKeyboardButton("📆 Daily Word", callback_data=str(DAILY_WORD)),
@@ -286,7 +294,7 @@ async def vocabulary(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         ],
         [
             InlineKeyboardButton("<< Menu", callback_data=str(MENU)),
-            InlineKeyboardButton("🎓 Knowlage Level", callback_data=str(KNOWLEDGE_LEVEL)),
+            InlineKeyboardButton("🎓 Knowledge Level", callback_data=str(KNOWLEDGE_LEVEL)),
         ]
     ])
     
@@ -331,11 +339,10 @@ async def search_word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int
 
     # Send message with text and appended InlineKeyboards   
     await QueryType.reply_query(
-        update=update,reply_text=SEARCH_WORD_TEXT, reply_markup=search_word_markup
+        update=update,reply_text=SEARCH_WORD_SETTINGS_TEXT, reply_markup=search_word_markup
     )
     
     return MENU_ROUTES
-
 
 async def archive(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     
@@ -374,18 +381,25 @@ async def quiz(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     
     return MENU_ROUTES
 
-async def word(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-        # check query type.
+async def search_word_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    
+    # check query type.
     word = context.args[0] if context.args else None
-    print(str(word))
     if word:
         # If the word is provided, send it back to the user (you can also fetch data here)
+        word_translate = await TranslateWord.translate_word(word=word) 
         word_definition = await GetWordServices.get_word_definition_service(word=word)
-        await update.message.reply_text(f'word_definition: {word_definition}')
+        word_example = await GetWordServices.get_word_example(word=word, top_example=False)
+        message = SEARCH_WORD_TEXT.format(
+            word=word, 
+            translate=word_translate,
+            example=word_example,
+            definition=word_definition) 
+        
+        await update.message.reply_text(message,)
     else:
         # If no word is provided
         await update.message.reply_text('Please provide a word after /word.')
-    
     
     return MENU_ROUTES
     

@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import os
 from django.views.decorators.csrf import csrf_exempt
 
- # Adjus
+ # Adjust
 import uvicorn
 from django.core.asgi import get_asgi_application
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest
@@ -61,9 +61,7 @@ from apps.telegrambot.handlers import (
     knowledge_level,
     native_language,
     language_to_learn,
-    word
-    
-    
+    search_word_text,
 )
 
 load_dotenv(override=True)
@@ -75,7 +73,7 @@ PUBLIC_URL = os.getenv("PUBLIC_URL")
 
 # Enable logging
 logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+    format="%(levelname)s:---> NAME:%(name)s --->  MESSAGE%(message)s", level=logging.INFO
 )
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
@@ -200,7 +198,7 @@ conv_handler = ConversationHandler(
                 CommandHandler("language_to_learn",language_to_learn),
                 CommandHandler("archive",archive),
                 CommandHandler("quiz",quiz),
-                CommandHandler("word",word),      
+                CommandHandler("word",search_word_text),      
             ],
         },
         fallbacks=[
@@ -209,14 +207,8 @@ conv_handler = ConversationHandler(
 
     )
 
-    # Add ConversationHandler to application that will be used for handling updates
-# ptb_application.add_handler(start_conv)
+# Add Conv_textersationHandler to application that will be used for handling updates
 ptb_application.add_handler(conv_handler)
-# ptb_application.add_handler(CommandHandler("start", start))
-# ptb_application.add_handler(CommandHandler("help", help))
-# ptb_application.add_handler(CommandHandler("menu", menu))
-# ptb_application.add_handler(CommandHandler("daily_word", daily_word))
-# ptb_application.add_handler(CommandHandler("settings", settings))
 
 
 urls.urlpatterns.extend([

@@ -17,8 +17,8 @@ Ready to start? Tap continue! 👇
 '''
 
 NATIVE_LANGUAGE_TEXT = '''
-Now you chose languge that want to learn:
-🌐 To: (language thet want to learn)
+Now you chose langue that want to learn:
+🌐 To: (language that want to learn)
 '''
 
 MAIN_MENU_TEXT='''
@@ -32,8 +32,8 @@ For assistance, select /help
 '''
 
 LANGUAGE_TO_LEARN_TEXT: str = '''
-Now you chose languge that want to learn:
-🌐 To: (language thet want to learn)
+Now you chose langue that want to learn:
+🌐 To: (language that want to learn)
 ''',
 
 LANGUAGE_KNOWLEDGE_LEVEL_TEXT: str ='''
@@ -57,7 +57,7 @@ DAILY_WORD_SETTINGS_TEXT: str = "📆 hear you can change Daily Word settings"
 
 SETTINGS_TEXT = '⚙️ Settings Hear you can change bot settings'
 
-SEARCH_WORD_TEXT = '''
+SEARCH_WORD_SETTINGS_TEXT = '''
 🔍 Please send the correct word format, otherwise the bot won't be able to respond:
 
 /word word_you_want_to_find 
@@ -66,3 +66,12 @@ example: /word phenomenon'''
 ARCHIVE_TEXT = '🗂️ hear should be word archive logic'
 
 QUIZ_TEXT = '🎯 The quiz feature is currently under development.'
+
+SEARCH_WORD_TEXT= '''\
+    
+{word} : {translate}
+
+Example: {example}
+
+Definition: {definition}
+'''

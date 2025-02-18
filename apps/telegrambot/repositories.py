@@ -1,7 +1,7 @@
 from apps.telegrambot.models import User
 
 
-class UserRepasitory:
+class UserRepository:
     @staticmethod
     async def create_user(
         user_chat_id: int,
@@ -74,7 +74,7 @@ class UserRepasitory:
     # @staticmethod
     # async def update_native_language(user_chat_id,new_native_language):
 
-    #     user= UserRepasitory.get_user_by_id(user_chat_id)
+    #     user= UserRepository.get_user_by_id(user_chat_id)
     #     if user:
     #         user.native_language =new_native_language
     #         user.save()
@@ -85,7 +85,7 @@ class UserRepasitory:
     # @staticmethod
     # async def update_language_to_learn(user_chat_id,new_learning_language):
 
-    #     user= UserRepasitory.get_user_by_id(user_chat_id)
+    #     user= UserRepository.get_user_by_id(user_chat_id)
     #     if user:
     #         user.language_to_learn =new_learning_language
     #         user.save()
